@@ -69,11 +69,11 @@ public class AmortizationCalculator {
         }
 
         BigDecimal onePlusRate = BigDecimal.ONE.add(monthlyRate);
-        BigDecimal onePlusRateToTerms = onePlusRate.pow(totalMonths, INTERMEDIATE_MC);
+        BigDecimal onePlusRateToThePowerOfMonths = onePlusRate.pow(totalMonths, INTERMEDIATE_MC);
 
         BigDecimal numerator = principal.multiply(monthlyRate, INTERMEDIATE_MC)
-                .multiply(onePlusRateToTerms, INTERMEDIATE_MC);
-        BigDecimal denominator = onePlusRateToTerms.subtract(BigDecimal.ONE, INTERMEDIATE_MC);
+                .multiply(onePlusRateToThePowerOfMonths, INTERMEDIATE_MC);
+        BigDecimal denominator = onePlusRateToThePowerOfMonths.subtract(BigDecimal.ONE, INTERMEDIATE_MC);
 
         return numerator.divide(denominator, INTERMEDIATE_MC).setScale(KOBO_SCALE, ROUNDING);
     }
