@@ -9,7 +9,7 @@ import java.util.List;
 public class AmortizationCalculator {
 
     private static final int KOBO_SCALE = 2;
-    private static final RoundingMode ROUNDING = RoundingMode.HALF_EVEN;
+    private static final RoundingMode ROUNDING = RoundingMode.HALF_EVEN; // use the banker's rounding (HALF_EVEN)
     private static final MathContext INTERMEDIATE_MC = new MathContext(25, RoundingMode.HALF_EVEN);
 
     /**
