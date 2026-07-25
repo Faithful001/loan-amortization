@@ -7,28 +7,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class AmortizationCalculator {
+
     private static final int KOBO_SCALE = 2;
     private static final RoundingMode ROUNDING = RoundingMode.HALF_EVEN;
     private static final MathContext INTERMEDIATE_MC = new MathContext(25, RoundingMode.HALF_EVEN);
 
+    /**
+     * Generates the full month-by-month amortization schedule for the given loan.
+     */
     public List<AmortizationEntry> generateSchedule(Loan loan) {
-        BigDecimal monthlyRate = loan.annualRatePercent()
-            .divide(BigDecimal.valueOf(100), INTERMEDIATE_MC)
-            .divide(BigDecimal.valueOf(12), INTERMEDIATE_MC);
-
+        // calculate monthly rate
+        BigDecimal monthlyRate = monthlyRate(loan.annualRatePercent());
         // calculate monthly payment
-        if (monthlyRate.signum() == 0) {
-            loan.principal().divide(BigDecimal.valueOf(loan.termMonths()));
-        }
-
-        BigDecimal onePlusR = BigDecimal.ONE.add(monthlyRate);
-        BigDecimal onePlusRToN = onePlusR.pow(loan.termMonths(), INTERMEDIATE_MC);
-
-        BigDecimal numerator = loan.principal().multiply(monthlyRate, INTERMEDIATE_MC)
-                .multiply(onePlusRToN, INTERMEDIATE_MC);
-        BigDecimal denominator = onePlusRToN.subtract(BigDecimal.ONE, INTERMEDIATE_MC);
-
-        BigDecimal payment = numerator.divide(denominator, INTERMEDIATE_MC).setScale(KOBO_SCALE, ROUNDING);
+        BigDecimal payment = calculateMonthlyPayment(loan.principal(), monthlyRate, loan.termMonths());
 
         List<AmortizationEntry> schedule = new ArrayList<>(loan.termMonths());
         BigDecimal balance = loan.principal().setScale(KOBO_SCALE, ROUNDING);
@@ -49,7 +40,6 @@ public class AmortizationCalculator {
             } else {
                 actualPayment = payment;
                 principalPortion = actualPayment.subtract(interest);
-
                 if (principalPortion.compareTo(balance) > 0) {
                     principalPortion = balance;
                     actualPayment = principalPortion.add(interest);
@@ -62,5 +52,29 @@ public class AmortizationCalculator {
         }
 
         return schedule;
+    }
+
+    /**
+     * converts a normal annual rate into as a percentage value (e.g. 6.5 -> 6.5%)
+     */
+    private BigDecimal monthlyRate(BigDecimal annualRatePercent) {
+        return annualRatePercent
+                .divide(BigDecimal.valueOf(100), INTERMEDIATE_MC)
+                .divide(BigDecimal.valueOf(12), INTERMEDIATE_MC);
+    }
+
+    private BigDecimal calculateMonthlyPayment(BigDecimal principal, BigDecimal monthlyRate, int n) {
+        if (monthlyRate.compareTo(BigDecimal.ZERO) == 0) {
+            return principal.divide(BigDecimal.valueOf(n), KOBO_SCALE, ROUNDING);
+        }
+
+        BigDecimal onePlusR = BigDecimal.ONE.add(monthlyRate);
+        BigDecimal onePlusRToN = onePlusR.pow(n, INTERMEDIATE_MC);
+
+        BigDecimal numerator = principal.multiply(monthlyRate, INTERMEDIATE_MC)
+                .multiply(onePlusRToN, INTERMEDIATE_MC);
+        BigDecimal denominator = onePlusRToN.subtract(BigDecimal.ONE, INTERMEDIATE_MC);
+
+        return numerator.divide(denominator, INTERMEDIATE_MC).setScale(KOBO_SCALE, ROUNDING);
     }
 }
