@@ -63,17 +63,17 @@ public class AmortizationCalculator {
                 .divide(BigDecimal.valueOf(12), INTERMEDIATE_MC);
     }
 
-    private BigDecimal calculateMonthlyPayment(BigDecimal principal, BigDecimal monthlyRate, int n) {
+    private BigDecimal calculateMonthlyPayment(BigDecimal principal, BigDecimal monthlyRate, int totalMonths) {
         if (monthlyRate.compareTo(BigDecimal.ZERO) == 0) {
-            return principal.divide(BigDecimal.valueOf(n), KOBO_SCALE, ROUNDING);
+            return principal.divide(BigDecimal.valueOf(totalMonths), KOBO_SCALE, ROUNDING);
         }
 
-        BigDecimal onePlusR = BigDecimal.ONE.add(monthlyRate);
-        BigDecimal onePlusRToN = onePlusR.pow(n, INTERMEDIATE_MC);
+        BigDecimal onePlusRate = BigDecimal.ONE.add(monthlyRate);
+        BigDecimal onePlusRateToTerms = onePlusRate.pow(totalMonths, INTERMEDIATE_MC);
 
         BigDecimal numerator = principal.multiply(monthlyRate, INTERMEDIATE_MC)
-                .multiply(onePlusRToN, INTERMEDIATE_MC);
-        BigDecimal denominator = onePlusRToN.subtract(BigDecimal.ONE, INTERMEDIATE_MC);
+                .multiply(onePlusRateToTerms, INTERMEDIATE_MC);
+        BigDecimal denominator = onePlusRateToTerms.subtract(BigDecimal.ONE, INTERMEDIATE_MC);
 
         return numerator.divide(denominator, INTERMEDIATE_MC).setScale(KOBO_SCALE, ROUNDING);
     }
